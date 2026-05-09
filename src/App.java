@@ -2,7 +2,9 @@ import java.nio.charset.Charset;
 import java.time.LocalDate;
 import java.util.Scanner;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 
 public class App {
@@ -20,7 +22,7 @@ public class App {
     static int quantosProdutos = 0;
 
     /** Pilha de pedidos */
-    static Pilha<Pedido> pilhaPedidos = new Pilha<>();
+    static Fila<Pedido> filaPedidos = new Fila<>();
         
     static void limparTela() {
         System.out.print("\033[H\033[2J");
@@ -208,17 +210,45 @@ public class App {
      */
     public static void finalizarPedido(Pedido pedido) {
     	
-    	// TODO
+    	filaPedidos.enfileirar(pedido);
+    	System.out.println("Pedido finalizado!\n" + pedido.toString());
     }
     
     public static void listarProdutosPedidosRecentes() {
     	
-    	// TODO
+    	int numPedidos = lerOpcao("Quantos pedidos recentes deseja visualizar?", Integer.class);
+    	Fila<Pedido> lote = filaPedidos.extrairLote(numPedidos);
+    	while (!lote.vazia()) {
+    		Pedido p = lote.desenfileirar();
+    		System.out.println(p.toString());
+    	}
+    }
+
+    static void testeFilaCaracteres() {
+
+    	String nome = "SEU NOME AQUI";
+    	Fila<Character> filaChars = new Fila<>();
+
+    	for (char c : nome.toCharArray())
+    		filaChars.enfileirar(c);
+
+    	System.out.println("Fila: ");
+    	filaChars.imprimir();
+
+    	char busca = 'a';
+    	System.out.println("Ocorrencias de '" + busca + "': " + filaChars.contarOcorrencias(busca));
+
+    	System.out.println("Desenfileirado: " + filaChars.desenfileirar());
+
+    	System.out.println("Fila apos desenfileirar: ");
+    	filaChars.imprimir();
     }
     
 	public static void main(String[] args) {
 		
 		teclado = new Scanner(System.in, Charset.forName("UTF-8"));
+
+		testeFilaCaracteres();
         
 		nomeArquivoDados = "produtos.txt";
         produtosCadastrados = lerProdutos(nomeArquivoDados);
@@ -238,7 +268,16 @@ public class App {
                 case 6 -> listarProdutosPedidosRecentes();
             }
             pausa();
-        }while(opcao != 0);       
+        }
+        while(opcao != 0);
+
+        try (PrintWriter escritor = new PrintWriter(new FileWriter("pedidos.txt", true))) {
+        	Fila<Pedido> todos = filaPedidos.extrairLote(Integer.MAX_VALUE);
+        	while (!todos.vazia())
+        		escritor.println(todos.desenfileirar().toString() + "\n---");
+        } catch (IOException e) {
+        	System.out.println("Erro ao salvar pedidos: " + e.getMessage());
+        }
 
         teclado.close();    
     }

@@ -40,21 +40,33 @@ public class Pilha<E> {
 
 	}
 
-	/**
-	 * Cria e devolve uma nova pilha contendo os primeiros numItens elementos
-	 * do topo da pilha atual.
-	 * 
-	 * Os elementos são mantidos na mesma ordem em que estavam na pilha original.
-	 * Caso a pilha atual possua menos elementos do que o valor especificado,
-	 * uma exceção será lançada.
-	 *
-	 * @param numItens o número de itens a serem copiados da pilha original.
-	 * @return uma nova instância de Pilha<E> contendo os numItens primeiros elementos.
-	 * @throws IllegalArgumentException se a pilha não contém numItens elementos.
-	 */
 	public Pilha<E> subPilha(int numItens) {
-		
-		// TODO
-		return null;
+
+		int total = 0;
+		Celula<E> aux = topo;
+		while (aux != fundo) {
+			total++;
+			aux = aux.getProximo();
+		}
+
+		if (total < numItens) {
+			throw new IllegalArgumentException(
+				"A pilha não contém " + numItens + " elementos. Total atual: " + total);
+		}
+
+
+		Pilha<E> temp = new Pilha<>();
+		Celula<E> atual = topo;
+		for (int i = 0; i < numItens; i++) {
+			temp.empilhar(atual.getItem());
+			atual = atual.getProximo();
+		}
+
+		Pilha<E> resultado = new Pilha<>();
+		while (!temp.vazia()) {
+			resultado.empilhar(temp.desempilhar());
+		}
+
+		return resultado;
 	}
 }
